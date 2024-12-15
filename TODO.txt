@@ -1,0 +1,46 @@
+https://julialang.org/
+pytorch
+
+HW Acceleration : 
+
+https://en.wikipedia.org/wiki/Category:AI_accelerators
+
+https://en.wikipedia.org/wiki/High-level_synthesis
+
+https://en.wikipedia.org/wiki/Hardware_acceleration
+
+formal verification : 
+
+https://zipcpu.com/blog/2017/10/19/formal-intro.html
+
+https://github.com/YosysHQ/riscv-formal
+
+fractional bit : 
+
+https://arbital.com/p/fractional_bit/
+
+https://arbital.com/p/fractional_bit/?l=3v2
+
+https://arbital.com/p/galcom/
+
+DSP : https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/
+
+
+kaggle for data sets : https://www.kaggle.com/datasets/animatronbot/mnist-digit-recognizer?resource=download
+another one for data sets : https://www.forbes.com/sites/bernardmarr/2016/02/12/big-data-35-brilliant-and-free-data-sources-for-2016/
+coursera machine learning specialization : https://www.coursera.org/specializations/machine-learning-introduction#courses
+coursera deep learning specialization : https://www.coursera.org/specializations/deep-learning?irclickid=x-U2gpTSJxyLTxPwUx0Mo3EoUkDXeu01jUFXWo0&irgwc=1#courses
+neural net from zero to here playlist : https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ
+TODO: pandas , numpy , matplotlib , pytorch
+Tensor Flow : https://www.tensorflow.org/
+Jupyter and Jupyter lab : https://jupyter.org/try , https://jupyter.org
+Build AI Soln GUI : https://www.stack-ai.com/?via=lucas&gad_source=1&gclid=CjwKCAjwvvmzBhA2EiwAtHVrb0aoPbCZfDZFfz5yvbWhlDNkJ3pIB0Q_GH5V3q_RLrrMcd91YImyBBoC6IMQAvD_BwE
+
+FPGA ML Stuff : 
+https://fpgainsights.com/fpga/accelerating-ai-and-ml-with-fpga/
+https://www.mdpi.com/2076-3417/12/1/89
+https://dl.acm.org/doi/10.1145/3613963
+paper : https://arxiv.org/pdf/2107.03653
+linkedIN : https://www.linkedin.com/pulse/machine-learning-acceleration-fpgas-muhammad-nouman/
+
+
