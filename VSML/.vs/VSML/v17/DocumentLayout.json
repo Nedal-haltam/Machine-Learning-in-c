@@ -1,17 +1,17 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\GitHub Repos\\AIML\\VSML\\",
+  "WorkspaceRootPath": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\AIML\\VSML\\Neuralizer.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\Neuralizer.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|solutionrelative:Neuralizer.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\AIML\\VSML\\ADDER.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\ADDER.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|solutionrelative:ADDER.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\AIML\\VSML\\NN.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\NN.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{C2858CDD-4891-4C0C-B0AB-61ED64C5A90B}|VSML.vcxproj|solutionrelative:NN.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -30,15 +30,15 @@
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "ADDER.c",
-              "DocumentMoniker": "D:\\GitHub Repos\\AIML\\VSML\\ADDER.c",
+              "DocumentMoniker": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\ADDER.c",
               "RelativeDocumentMoniker": "ADDER.c",
-              "ToolTip": "D:\\GitHub Repos\\AIML\\VSML\\ADDER.c",
+              "ToolTip": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\ADDER.c",
               "RelativeToolTip": "ADDER.c",
               "ViewState": "AQIAAAMAAAAAAAAAAAAwwDQAAAAGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
@@ -48,11 +48,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Neuralizer.c",
-              "DocumentMoniker": "D:\\GitHub Repos\\AIML\\VSML\\Neuralizer.c",
+              "DocumentMoniker": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\Neuralizer.c",
               "RelativeDocumentMoniker": "Neuralizer.c",
-              "ToolTip": "D:\\GitHub Repos\\AIML\\VSML\\Neuralizer.c",
+              "ToolTip": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\Neuralizer.c",
               "RelativeToolTip": "Neuralizer.c",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAYwB8AAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAYwBcAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-09-01T14:06:24.1Z",
               "EditorCaption": ""
@@ -61,9 +61,9 @@
               "$type": "Document",
               "DocumentIndex": 2,
               "Title": "NN.h",
-              "DocumentMoniker": "D:\\GitHub Repos\\AIML\\VSML\\NN.h",
+              "DocumentMoniker": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\NN.h",
               "RelativeDocumentMoniker": "NN.h",
-              "ToolTip": "D:\\GitHub Repos\\AIML\\VSML\\NN.h",
+              "ToolTip": "D:\\GitHub Repos\\MLinc\\Machine-Learning-in-c\\VSML\\NN.h",
               "RelativeToolTip": "NN.h",
               "ViewState": "AQIAAOkCAAAAAAAAAAAewPYCAABHAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
