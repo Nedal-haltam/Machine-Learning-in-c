@@ -30,10 +30,10 @@ mnist_dataset_t* train_dataset, * test_dataset;
 mnist_dataset_t batch;
 
 
-const char* train_images_file = "./data/train-images.idx3-ubyte";
-const char* train_labels_file = "./data/train-labels.idx1-ubyte";
-const char* test_images_file = "./data/t10k-images.idx3-ubyte";
-const char* test_labels_file = "./data/t10k-labels.idx1-ubyte";
+const char* train_images_file = "./MnistData/train-images.idx3-ubyte";
+const char* train_labels_file = "./MnistData/train-labels.idx1-ubyte";
+const char* test_images_file = "./MnistData/t10k-images.idx3-ubyte";
+const char* test_labels_file = "./MnistData/t10k-labels.idx1-ubyte";
 
 
 
@@ -782,10 +782,10 @@ void learn(Arena* arena, NN nn, Mat traininput, Mat trainoutput, size_t epochs, 
             //printf("    Batch %zu / %zu done.\n\n", j+1, batches);
         }
         //printf("Epoch %zu / %zu processing done.\n\n", i + 1, epochs);
-        printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
+        //printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
         //printf("intermed : %zu\n", arena_occupied_bytes(arena));
     }
-    printf("intermed : %zu\n", arena_occupied_bytes(arena));
+    //printf("intermed : %zu\n", arena_occupied_bytes(arena));
     
 }
 

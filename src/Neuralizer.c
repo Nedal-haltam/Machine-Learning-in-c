@@ -6,8 +6,9 @@
 #include "math.h"
 #include "raylib.h"
 #include "NN.h"
-#define SV_IMPLEMENTATION
-#include "sv.h"
+#include "process.h"
+//#define SV_IMPLEMENTATION
+//#include "sv.h"
 
 typedef struct {
     size_t count;
@@ -58,22 +59,22 @@ static void ToggleFullScreen() {
     }
 }
 
-Array nn_struct_from_file(const char* file_path) {
-    Array nn_struct = {0};
-    int buffer_size;
-    unsigned char* buffer = LoadFileData(file_path, &buffer_size);
-
-    String_View content = sv_from_parts(buffer, buffer_size);
-
-    content = sv_trim_left(content);
-    while (content.count > 0 && isdigit(content.data[0])) {
-        size_t x = sv_chop_u64(&content);
-        nob_da_append(&nn_struct, (size_t)x);
-        content = sv_trim_left(content);
-    }
-
-    return nn_struct;
-}
+//Array nn_struct_from_file(const char* file_path) {
+//    Array nn_struct = {0};
+//    int buffer_size;
+//    unsigned char* buffer = LoadFileData(file_path, &buffer_size);
+//
+//    String_View content = sv_from_parts(buffer, buffer_size);
+//
+//    content = sv_trim_left(content);
+//    while (content.count > 0 && isdigit(content.data[0])) {
+//        size_t x = sv_chop_u64(&content);
+//        nob_da_append(&nn_struct, (size_t)x);
+//        content = sv_trim_left(content);
+//    }
+//
+//    return nn_struct;
+//}
 
 void nn_render(NN nn, Rectangle boundary) {
     size_t n = nn.count;
@@ -91,7 +92,7 @@ void nn_render(NN nn, Rectangle boundary) {
                 .x = boundary.x + layer_gap + layer_gap / 2,
                 .y = boundary.y + (k + 1) * (boundary.height / (nn.layers[1].a.cols + 1)),
             };
-            DrawLineEx(center, end, 1, BLACK);
+            DrawLineEx(center, end, 1, WHITE);
         }
     }
     // Drawing the network
@@ -103,7 +104,7 @@ void nn_render(NN nn, Rectangle boundary) {
             unsigned char b = (unsigned char) (255 * MAT_AT(nn.layers[l].b, 0, i));
             unsigned char w = (unsigned char) (255 * MAT_AT(nn.layers[l].w, 0, i));
 
-            Color color = CLITERAL(Color) { w, b, w*b, 255 };
+            Color color = (Color) { w, b, 128, 255 };
             center.x = boundary.x + (l)*layer_gap + layer_gap / 2;
             center.y = boundary.y + (i + 1) * (boundary.height / (nn.layers[l].a.cols + 1));
             DrawCircleV(center, r, color);
@@ -112,7 +113,7 @@ void nn_render(NN nn, Rectangle boundary) {
                     .x = boundary.x + (l+1) * layer_gap + layer_gap / 2,
                     .y = boundary.y + (k + 1) * (boundary.height / (nn.layers[l+1].a.cols + 1)),
                 };
-                DrawLineEx(center, end, 1, BLACK);
+                DrawLineEx(center, end, 1, WHITE);
             }
         }
     }
@@ -126,7 +127,6 @@ void Init() {
 }
 
 void update() {
-    ClearBackground(ColorBrightness(GRAY, 0.4f));
     w = GetScreenWidth();
     h = GetScreenHeight();
     if (IsKeyDown(KEY_R)) {
@@ -231,10 +231,11 @@ int main(void) {
     
     while (!WindowShouldClose()) {
         BeginDrawing();
-        update();
+        ClearBackground((Color) { 0x18, 0x18, 0x18, 0x18 });
 
-        float boundw = (float) 0.6*w;
-        float boundh = (float) 0;
+        update();
+        float boundw = 0.6f * w;
+        float boundh = 0;
         Rectangle NNboundary = {
             .x = boundw,
             .y = boundh,
@@ -246,7 +247,7 @@ int main(void) {
         learn(arenaloc, nn, ti, to, epochs, mini_batch_size, LearRate, RegParam);
         learn(arenaloc, nn, ti, to, epochs, mini_batch_size, LearRate, RegParam);
         float c = nn_cost(nn, ti, to);
-        nob_da_append(&cost, 1*c);
+        nob_da_append(&cost, c);
         Rectangle plot_boundary = {
             .x = 30,
             .y = 30,
@@ -254,38 +255,9 @@ int main(void) {
             .height = h-150,
         };
         plot_cost(cost, plot_boundary);
-        //DrawRectangleRec(plot_boundary, RED);
-
-
-
-
 
         arena_reset(&arena);
         EndDrawing();
-/*
-        theta += 0.05;
-        for (size_t i = 0; i < size; i++) {
-            float t = (float)i * ((float)w / (size - 1)) - w / 2;
-            //float val = 10 * sinf(2 * PI * t);
-            float val = powf(0.25*t, 2);
-            if (theta >= 2 * PI) {
-                theta = 0;
-            }
-            
-            graph.vals[i].end.x = t;
-            graph.vals[i].end.y = -val;
-            
-            float cosres = cosf(theta);
-            float sinres = sinf(theta);
-
-            float oldx = graph.vals[i].end.x;
-            float oldy = graph.vals[i].end.y;
-
-            graph.vals[i].end.x = oldx * cosres - oldy * sinres + w / 2;
-            graph.vals[i].end.y = oldx * sinres + oldy * cosres + w / 2;
-            DrawCircleV(graph.vals[i].end, r, RED);
-        }
-        */
     }
 
     CloseWindow();
