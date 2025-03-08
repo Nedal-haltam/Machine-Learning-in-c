@@ -1,3 +1,4 @@
 /src/.vs
 /src/VSML/x64
 /src/x64
+*.vsidx
