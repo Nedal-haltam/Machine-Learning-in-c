@@ -31,7 +31,7 @@ typedef enum MatType
     weights, biases
 } MatType;
 
-typedef struct Mat {
+typedef struct {
     size_t rows;
     size_t cols;
     size_t stride;
@@ -57,14 +57,14 @@ typedef struct {
     arena_type* data;
 } Arena;
 
-Arena intermed;
-Mat* nabla_b = {0};
-Mat* nabla_w = {0};
-Mat* gas;
-float eps = 0.001f;
+static Arena intermed;
+static Mat* nabla_b = {0};
+static Mat* nabla_w = {0};
+static Mat* gas;
+static float eps = 0.001f;
 #define BP 1
 
-Arena arena_alloc_alloc(size_t capacity_bytes) {
+static Arena arena_alloc_alloc(size_t capacity_bytes) {
     Arena arena = { 0 };
 
     // size per word    
@@ -81,7 +81,7 @@ Arena arena_alloc_alloc(size_t capacity_bytes) {
     return arena;
 }
 
-void* arena_alloc(Arena* arena, size_t size_bytes) {
+static void* arena_alloc(Arena* arena, size_t size_bytes) {
 
     if (arena == NULL) return malloc(size_bytes);
 
@@ -98,11 +98,11 @@ void* arena_alloc(Arena* arena, size_t size_bytes) {
 }
 
 
-float rand_float() {
+static float rand_float() {
     return (float)rand() / (float)RAND_MAX;
 }
 
-void mat_fill(Mat m, float x) {
+static void mat_fill(Mat m, float x) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = x;
@@ -110,7 +110,7 @@ void mat_fill(Mat m, float x) {
     }
 }
 
-Mat mat_alloc(Arena* arena, size_t rows, size_t cols) {
+static Mat mat_alloc(Arena* arena, size_t rows, size_t cols) {
     Mat m = { 0 };
     m.rows = rows;
     m.cols = cols;
@@ -121,16 +121,16 @@ Mat mat_alloc(Arena* arena, size_t rows, size_t cols) {
     return m;
 }
 
-void mat_save(const char* file_path) {
+static void mat_save(const char* file_path) {
 
 }
 
-Mat mat_load(const char* file_path) {
+static Mat mat_load(const char* file_path) {
     Mat m;
     return m;
 }
 
-NN nn_alloc(Arena* arena, size_t* nn_struct, size_t count) {
+static NN nn_alloc(Arena* arena, size_t* nn_struct, size_t count) {
     NN nn = { 0 };
     nn.count = count;
     nn.layers = (Layer*)arena_alloc(arena, nn.count * sizeof(*nn.layers));
@@ -145,16 +145,16 @@ NN nn_alloc(Arena* arena, size_t* nn_struct, size_t count) {
     return nn;
 }
 
-void nn_save(const char* file_path) {
+static void nn_save(const char* file_path) {
 
 }
 
-NN nn_load(const char* file_path) {
+static NN nn_load(const char* file_path) {
     NN nn;
     return nn;
 }
 
-void mat_copy(Mat dst, Mat src) {
+static void mat_copy(Mat dst, Mat src) {
     assert(dst.rows == src.rows);
     assert(dst.cols == src.cols);
 
@@ -166,7 +166,7 @@ void mat_copy(Mat dst, Mat src) {
     }
 }
 
-Mat mat_row(Mat m, size_t r) {
+static Mat mat_row(Mat m, size_t r) {
     Mat ret = { 0 };
     ret.rows = 1;
     ret.cols = m.cols;
@@ -175,7 +175,7 @@ Mat mat_row(Mat m, size_t r) {
     return ret;
 }
 
-Mat mat_mat(Mat m, size_t sr, size_t er, size_t sc, size_t ec) {
+static Mat mat_mat(Mat m, size_t sr, size_t er, size_t sc, size_t ec) {
     Mat ret = { 0 };
     ret.rows = er - sr + 1;
     ret.cols = ec - sc + 1;
@@ -184,7 +184,7 @@ Mat mat_mat(Mat m, size_t sr, size_t er, size_t sc, size_t ec) {
     return ret;
 }
 
-void mat_transpose(Mat dst, Mat src) {
+static void mat_transpose(Mat dst, Mat src) {
     assert(dst.rows == src.cols);
     assert(dst.cols == src.rows);
     for (size_t i = 0; i < dst.rows; i++) {
@@ -194,7 +194,7 @@ void mat_transpose(Mat dst, Mat src) {
     }
 }
 
-void mat_rand(Mat m, float lo, float hi) {
+static void mat_rand(Mat m, float lo, float hi) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = rand_float() * (hi - lo) + lo;
@@ -202,7 +202,7 @@ void mat_rand(Mat m, float lo, float hi) {
     }
 }
 
-void mat_incr(Mat m) {
+static void mat_incr(Mat m) {
     float temp = 1;
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -212,7 +212,7 @@ void mat_incr(Mat m) {
     }
 }
 
-void mat_dot(Mat c, Mat a, Mat b) {
+static void mat_dot(Mat c, Mat a, Mat b) {
     assert(c.rows == a.rows);
     assert(c.cols == b.cols);
     assert(a.cols == b.rows);
@@ -227,7 +227,7 @@ void mat_dot(Mat c, Mat a, Mat b) {
     }
 }
 
-void mat_addEW(Mat c, Mat a, Mat b) {
+static void mat_addEW(Mat c, Mat a, Mat b) {
     assert(c.rows == a.rows && a.rows == b.rows);
     assert(c.cols == a.cols && a.cols == b.cols);
     for (size_t i = 0; i < c.rows; i++) {
@@ -238,7 +238,7 @@ void mat_addEW(Mat c, Mat a, Mat b) {
     }
 }
 
-void mat_subEW(Mat c, Mat a, Mat b) {
+static void mat_subEW(Mat c, Mat a, Mat b) {
     assert(c.rows == a.rows && a.rows == b.rows);
     assert(c.cols == a.cols && a.cols == b.cols);
     for (size_t i = 0; i < c.rows; i++) {
@@ -249,7 +249,7 @@ void mat_subEW(Mat c, Mat a, Mat b) {
     }
 }
 
-void mat_mulEW(Mat c, Mat a, Mat b) {
+static void mat_mulEW(Mat c, Mat a, Mat b) {
     assert(c.rows == a.rows && a.rows == b.rows);
     assert(c.cols == a.cols && a.cols == b.cols);
     for (size_t i = 0; i < c.rows; i++) {
@@ -259,7 +259,7 @@ void mat_mulEW(Mat c, Mat a, Mat b) {
     }
 }
 
-void mat_divEW(Mat c, Mat a, Mat b) {
+static void mat_divEW(Mat c, Mat a, Mat b) {
     assert(c.rows == a.rows && a.rows == b.rows);
     assert(c.cols == a.cols && a.cols == b.cols);
     for (size_t i = 0; i < c.rows; i++) {
@@ -271,7 +271,7 @@ void mat_divEW(Mat c, Mat a, Mat b) {
     }
 }
 
-void mat_exp(Mat m) {
+static void mat_exp(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = expf(MAT_AT(m, i, j));
@@ -279,7 +279,7 @@ void mat_exp(Mat m) {
     }
 }
 
-void mat_pow(Mat m, float x) {
+static void mat_pow(Mat m, float x) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = (float)pow(MAT_AT(m, i, j), x);
@@ -287,7 +287,7 @@ void mat_pow(Mat m, float x) {
     }
 }
 
-void mat_sqrt(Mat m) {
+static void mat_sqrt(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = sqrtf(MAT_AT(m, i, j));
@@ -295,7 +295,7 @@ void mat_sqrt(Mat m) {
     }
 }
 
-void mat_log(Mat m) {
+static void mat_log(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             if (MAT_AT(m, i, j) < 1e-7f)
@@ -305,7 +305,7 @@ void mat_log(Mat m) {
     }
 }
 
-void mat_clip(Mat m, float lo, float hi) {
+static void mat_clip(Mat m, float lo, float hi) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             if (MAT_AT(m, i, j) < lo)
@@ -316,7 +316,7 @@ void mat_clip(Mat m, float lo, float hi) {
     }
 }
 
-void mat_mul_const(Mat m, float x) {
+static void mat_mul_const(Mat m, float x) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) *= x;
@@ -324,7 +324,7 @@ void mat_mul_const(Mat m, float x) {
     }
 }
 
-void mat_add_const(Mat m, float x) {
+static void mat_add_const(Mat m, float x) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) += x;
@@ -332,7 +332,7 @@ void mat_add_const(Mat m, float x) {
     }
 }
 
-void mat_reciprocal(Mat m) {
+static void mat_reciprocal(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             if (MAT_AT(m, i, j) == 0)
@@ -342,7 +342,7 @@ void mat_reciprocal(Mat m) {
     }
 }
 
-float mat_max(Mat m) {
+static float mat_max(Mat m) {
     float max = MAT_AT(m, 0, 0);
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -353,7 +353,7 @@ float mat_max(Mat m) {
     return max;
 }
 
-size_t mat_max_ind_incol(Mat m, size_t c) {
+static size_t mat_max_ind_incol(Mat m, size_t c) {
     float max = MAT_AT(m, 0, c);
     size_t ind = 0;
     for (size_t i = 0; i < m.rows; i++) {
@@ -365,7 +365,7 @@ size_t mat_max_ind_incol(Mat m, size_t c) {
     return ind;
 }
 
-size_t mat_max_ind_inrow(Mat m, size_t r) {
+static size_t mat_max_ind_inrow(Mat m, size_t r) {
     float max = MAT_AT(m, r, 0);
     size_t ind = 0;
     for (size_t i = 0; i < m.cols; i++) {
@@ -377,7 +377,7 @@ size_t mat_max_ind_inrow(Mat m, size_t r) {
     return ind;
 }
 
-float mat_sumof(Mat m) {
+static float mat_sumof(Mat m) {
     float temp = 0;
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
@@ -387,7 +387,7 @@ float mat_sumof(Mat m) {
     return temp;
 }
 
-void mat_print(Mat m, const char* name) {
+static void mat_print(Mat m, const char* name) {
 
     printf("        %s = [\n", name);
     for (size_t i = 0; i < m.rows; i++) {
@@ -399,7 +399,7 @@ void mat_print(Mat m, const char* name) {
     printf("]\n");
 }
 
-void lay_print(Layer l, const char* name) {
+static void lay_print(Layer l, const char* name) {
     printf("    %s = [\n", name);
     MAT_PRINT(l.w);
     MAT_PRINT(l.b);
@@ -407,7 +407,7 @@ void lay_print(Layer l, const char* name) {
     printf("]\n");
 }
 
-void nn_print(NN nn, const char* name) {
+static void nn_print(NN nn, const char* name) {
     printf("%s = [\n", name);
     for (size_t i = 1; i < nn.count; i++) {
         LAY_PRINT(nn.layers[i]);
@@ -415,11 +415,12 @@ void nn_print(NN nn, const char* name) {
     printf("]\n");
 }
 
-float sigmoid(float z) {
+static float sigmoid(float z) {
     float act = 1.0f / (1.0f + expf(-z));
     return act;
 }
-void mat_sigmoid(Mat m) {
+
+static void mat_sigmoid(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             float act = MAT_AT(m, i, j);
@@ -428,10 +429,10 @@ void mat_sigmoid(Mat m) {
     }
 }
 
-float sigmoid_dir(float z) {
+static float sigmoid_dir(float z) {
     return sigmoid(z) * (1 - sigmoid(z));
 }
-void mat_sigmoid_dir(Mat m) {
+static void mat_sigmoid_dir(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = sigmoid_dir(MAT_AT(m, i, j));
@@ -439,10 +440,10 @@ void mat_sigmoid_dir(Mat m) {
     }
 }
 
-float Activation_ReLU(float z) {
+static float Activation_ReLU(float z) {
     return MAX(0, z);
 }
-void mat_Activation_ReLU(Mat m) {
+static void mat_Activation_ReLU(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = Activation_ReLU(MAT_AT(m, i, j));
@@ -450,10 +451,11 @@ void mat_Activation_ReLU(Mat m) {
     }
 }
 
-float Activation_ReLU_dir(float z) {
+static float Activation_ReLU_dir(float z) {
     return (z > 0) ? 1.0f : 0.0f;
 }
-void mat_Activation_ReLU_dir(Mat m) {
+
+static void mat_Activation_ReLU_dir(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = Activation_ReLU_dir(MAT_AT(m, i, j));
@@ -461,7 +463,7 @@ void mat_Activation_ReLU_dir(Mat m) {
     }
 }
 
-void mat_Activation_Softmax(Mat m) {
+static void mat_Activation_Softmax(Mat m) {
     if (m.rows == 1) {
         MAT_AT(m, 0, 0) = sigmoid(MAT_AT(m, 0, 0));
         return;
@@ -473,34 +475,35 @@ void mat_Activation_Softmax(Mat m) {
     mat_mul_const(m, 1.0f / sum);
 }
 
-void mat_normalized_tanh(Mat m) {
+static void mat_normalized_tanh(Mat m) {
     for (size_t i = 0; i < m.rows; i++) {
         for (size_t j = 0; j < m.cols; j++) {
             MAT_AT(m, i, j) = (tanhf(MAT_AT(m, i, j)) + 1) / 2.0f;
         }
     }
 }
-void mat_normalized_tanh_dir(Mat m) {
+
+static void mat_normalized_tanh_dir(Mat m) {
     mat_normalized_tanh(m);
     mat_pow(m, 2);
     mat_mul_const(m, -1);
     mat_add_const(m, 1);
 }
-void mat_outputlayer_activation(Mat m) {
+static void mat_outputlayer_activation(Mat m) {
     mat_sigmoid(m);
     //mat_normalized_tanh(m);
     //mat_Activation_Softmax(m);
 }
-void mat_outputlayer_activation_dir(Mat m) {
+static void mat_outputlayer_activation_dir(Mat m) {
     mat_sigmoid_dir(m);
     //mat_normalized_tanh_dir(m);
 }
-float outputlayer_activation(float z) {
+static float outputlayer_activation(float z) {
     return sigmoid(z);
     //return tanhf(z);
     //return Activation_Softmax(z);
 }
-float outputlayer_activation_dir(float z) {
+static float outputlayer_activation_dir(float z) {
     return sigmoid_dir(z);
     //return (1 - (tanhf(z) * tanhf(z)));
 }
@@ -508,27 +511,27 @@ float outputlayer_activation_dir(float z) {
 
 
 
-float hiddenlayer_activation(float z) {
+static float hiddenlayer_activation(float z) {
     //return Activation_ReLU(z);
     return sigmoid(z);
 }
-float hiddenlayer_activation_dir(float z) {
+static float hiddenlayer_activation_dir(float z) {
     //return Activation_ReLU_dir(z);
     return sigmoid_dir(z);
 }
 
-void mat_hiddenlayer_activation(Mat m) {
+static void mat_hiddenlayer_activation(Mat m) {
     //mat_Activation_ReLU(m);
     mat_sigmoid(m);
 }
-void mat_hiddenlayer_activation_dir(Mat m) {
+static void mat_hiddenlayer_activation_dir(Mat m) {
     //mat_Activation_ReLU_dir(m);
     mat_sigmoid_dir(m);
 }
 
 
 
-float mse(Mat pred, Mat output) {
+static float mse(Mat pred, Mat output) {
     float sum = 0;
     for (size_t i = 0; i < pred.rows; i++) {
         for (size_t j = 0; j < pred.cols; j++) {
@@ -540,7 +543,7 @@ float mse(Mat pred, Mat output) {
     return sum;
 }
 
-float crossentropy(Mat pred, Mat output) {
+static float crossentropy(Mat pred, Mat output) {
     float sum = 0;
     for (size_t i = 0; i < pred.rows; i++) {
         for (size_t j = 0; j < pred.cols; j++) {
@@ -554,14 +557,14 @@ float crossentropy(Mat pred, Mat output) {
     return -sum;
 }
 
-float mat_cost(Mat pred, Mat output) {
+static float mat_cost(Mat pred, Mat output) {
     assert(pred.rows == output.rows);
     assert(pred.cols == output.cols);
     return mse(pred, output);
     //return crossentropy(pred, output);
 }
 
-void feed_forward(NN nn) {
+static void feed_forward(NN nn) {
 
     Mat temp = NN_INPUT(nn);
     for (size_t i = 1; i < nn.count; i++) {
@@ -579,7 +582,7 @@ void feed_forward(NN nn) {
     }
 }
 
-float nn_cost(NN nn, Mat tinput, Mat toutput) {
+static float nn_cost(NN nn, Mat tinput, Mat toutput) {
     float sum = 0;
     for (size_t i = 0; i < tinput.rows; i++) {
         mat_copy(NN_INPUT(nn), mat_row(tinput, i));
@@ -596,7 +599,7 @@ float nn_cost(NN nn, Mat tinput, Mat toutput) {
     return sum;
 }
 
-float cost_dir(float pred, float ttrue) {
+static float cost_dir(float pred, float ttrue) {
     return 2 * (pred - ttrue);
 }
 
@@ -604,7 +607,7 @@ float cost_dir(float pred, float ttrue) {
 
 
 
-void nn_rand(NN nn) {
+static void nn_rand(NN nn) {
     for (size_t i = 1; i < nn.count; i++) {
         mat_rand(nn.layers[i].w, 0, 1);
         mat_rand(nn.layers[i].b, 0, 1);
@@ -612,7 +615,7 @@ void nn_rand(NN nn) {
     }
 }
 
-Mat* mats_alloc(Arena* arena, NN nn, MatType mt) {
+static Mat* mats_alloc(Arena* arena, NN nn, MatType mt) {
     Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count - 1));
     assert(mats != NULL);
     if (mt == weights) {
@@ -628,7 +631,7 @@ Mat* mats_alloc(Arena* arena, NN nn, MatType mt) {
     return mats;
 }
 
-Mat* gasalloc(Arena* arena, NN nn) {
+static Mat* gasalloc(Arena* arena, NN nn) {
     Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count));
     assert(mats != NULL);
     for (size_t i = 0; i < nn.count; i++) {
@@ -638,14 +641,14 @@ Mat* gasalloc(Arena* arena, NN nn) {
 }
 
 
-void reset_nablas(NN nn) {
+static void reset_nablas(NN nn) {
     for (size_t i = 0; i < nn.count - 1; i++) {
         mat_fill(nabla_b[i], 0);
         mat_fill(nabla_w[i], 0);
     }
 }
 
-void reset_gas(NN nn) {
+static void reset_gas(NN nn) {
     for (size_t i = 0; i < nn.count; i++) {
         mat_fill(gas[i], 0);
     }
@@ -654,7 +657,7 @@ void reset_gas(NN nn) {
 
 
 
-void finitediff(NN nn, Mat input, Mat output) {
+static void finitediff(NN nn, Mat input, Mat output) {
     // approximate the derivative of the cost WRT each weight and bias
     float currcost = nn_cost(nn, input, output);
 
@@ -686,7 +689,7 @@ void finitediff(NN nn, Mat input, Mat output) {
     }
 }
 
-void nn_backprop(Arena* arena, NN nn, Mat input, Mat output) {
+static void nn_backprop(Arena* arena, NN nn, Mat input, Mat output) {
 
     
     mat_copy(NN_INPUT(nn), input);
@@ -726,14 +729,14 @@ void nn_backprop(Arena* arena, NN nn, Mat input, Mat output) {
 }
 
 
-void backprop(Arena* arena, NN nn, Mat input, Mat output) {
+static void backprop(Arena* arena, NN nn, Mat input, Mat output) {
 
     nn_backprop(arena, nn, input, output);
 
 }
 
 
-void update_mini_batch(Arena* arena, NN nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n) {
+static void update_mini_batch(Arena* arena, NN nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n) {
 
     for (size_t i = 0; i < mini_batchin.rows; i++) {
         Mat input = mat_row(mini_batchin, i);
@@ -755,7 +758,7 @@ void update_mini_batch(Arena* arena, NN nn, Mat mini_batchin, Mat mini_batchout,
 }
 
 
-void learn(Arena* arena, NN nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam) {
+static void learn(Arena* arena, NN nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam) {
 
     size_t n = traininput.rows;
     size_t batches = n / mini_batch_size;

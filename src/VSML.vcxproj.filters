@@ -21,7 +21,7 @@
     <ClCompile Include="NN.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Neuralizer.c">
+    <ClCompile Include="Neuralizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

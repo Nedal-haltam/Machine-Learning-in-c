@@ -133,7 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Neuralizer.c" />
+    <ClCompile Include="Neuralizer.cpp" />
     <ClCompile Include="NN.h" />
     <ClCompile Include="xor.c" />
   </ItemGroup>
