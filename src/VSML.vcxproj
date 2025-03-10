@@ -133,26 +133,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ADDER.c" />
-    <ClCompile Include="mnist.c" />
-    <ClCompile Include="mnistfile.c" />
     <ClCompile Include="Neuralizer.c" />
     <ClCompile Include="NN.h" />
     <ClCompile Include="xor.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mnistfile.h" />
-    <ClInclude Include="sv.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="D:\AIML\data\t10k-images.idx3-ubyte" />
-    <None Include="D:\AIML\data\t10k-labels.idx1-ubyte" />
-    <None Include="D:\AIML\data\train-images.idx3-ubyte" />
-    <None Include="D:\AIML\data\train-labels.idx1-ubyte" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="demo.txt" />
-    <Text Include="examplepython.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

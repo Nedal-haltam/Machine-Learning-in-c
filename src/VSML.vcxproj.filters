@@ -18,38 +18,11 @@
     <ClCompile Include="xor.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mnistfile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NN.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ADDER.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Neuralizer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mnist.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mnistfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="D:\AIML\data\t10k-images.idx3-ubyte" />
-    <None Include="D:\AIML\data\t10k-labels.idx1-ubyte" />
-    <None Include="D:\AIML\data\train-images.idx3-ubyte" />
-    <None Include="D:\AIML\data\train-labels.idx1-ubyte" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="examplepython.txt" />
-    <Text Include="demo.txt" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@
 //#include "time.h"
 //#include "assert.h"
 //#include "math.h"
-//#include "mnistfile.h"
 //#include "NN.h"
 //
 //static void evaluate_gate(NN nn, Mat testinput, Mat testoutput) {
@@ -82,52 +81,4 @@
 //    printf("\n\n time taken : %lf\n\n", cpu_time_used);
 //    return 0;
 //}
-//
-//
-//// draw EM wave using raylib...
-////#define size 60.0f
-////int w = 800;
-////int h = 600;
-////float vals[(size_t) size] = { 0 };
-////void updatevals(float limit, float pad) {
-////    for (size_t i = 0; i < size; i++) {
-////        float val = 0.5f * (sinf(2 * PI * vals[i]));
-////        Rectangle rec = {
-////            .x = i * (w / size) + pad,
-////            .y = limit - limit * val,
-////            .width = w / size - pad,
-////            .height = limit * fabsf(val),
-////        };
-////        if (val < 0)
-////            rec.y = h - (limit + val);
-////        DrawRectangleRec(rec, RED);
-////
-////        rec.y = limit + limit * val;
-////        if (val > 0)
-////            rec.y = h - (limit + val);
-////        DrawRectangleRec(rec, BLUE);
-////
-////        vals[i] += eps;
-////    }
-////}
-////SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_ALWAYS_RUN);
-////InitWindow(w, h, "NN");
-////SetTargetFPS(120);
-////float pad = 5;
-////float limit = h/2;
-////for (size_t i = 0; i < size; i++) {
-////    vals[i] = (float)i / (size - 1);
-////}
-////while (!WindowShouldClose()) {
-////    w = GetScreenWidth();
-////    h = GetScreenHeight();
-////    BeginDrawing();
-////    ClearBackground(BLACK);
-////    updatevals(limit, pad);
-////    
-////    EndDrawing();
-////}
-////
-////CloseWindow();
-////return 0;
 //

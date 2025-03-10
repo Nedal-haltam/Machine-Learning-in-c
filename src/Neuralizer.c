@@ -7,28 +7,19 @@
 #include "raylib.h"
 #include "NN.h"
 #include "process.h"
-//#define SV_IMPLEMENTATION
-//#include "sv.h"
 
 typedef struct {
     size_t count;
     size_t capacity;
     size_t* items;
-} Array;
+} Array_size_t;
 typedef struct {
     size_t count;
     size_t capacity;
     float* items;
-} Array2;
-typedef struct {
-    Vector2 start;
-    Vector2 end;
-} point;
-typedef struct {
-    point* vals;
-} points;
+} Array_float;
 
-Array2 cost = { 0 };
+Array_float cost = { 0 };
 
 #define nob_da_append(da, item) \
     do {                                                                             \
@@ -41,12 +32,10 @@ Array2 cost = { 0 };
     } while (0)
 
 
-//#define size 1000
 int w = 800;
 int h = 600;
 NN nn;
 
-points graph;
 float r = 9;
 float pad = 5;
 
@@ -119,13 +108,6 @@ void nn_render(NN nn, Rectangle boundary) {
     }
 }
 
-void Init() {
-    SetRandomSeed((unsigned int)time(0));
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_ALWAYS_RUN);
-    InitWindow(w, h, "NN");
-    SetTargetFPS(60);
-}
-
 void update() {
     w = GetScreenWidth();
     h = GetScreenHeight();
@@ -146,7 +128,7 @@ void update() {
 
 }
 
-void cost_max(Array2 cost, float *max) {
+void cost_max(Array_float cost, float *max) {
     *max = FLT_MIN;
     for (size_t i = 0; i < cost.count; i++) {
         if (*max < cost.items[i]) {
@@ -155,7 +137,7 @@ void cost_max(Array2 cost, float *max) {
     }
 }
 
-void plot_cost(Array2 cost, Rectangle boundary) {
+void plot_cost(Array_float cost, Rectangle boundary) {
     Vector2 origin = { .x = boundary.x, .y = boundary.x + boundary.height };
     DrawLineEx((Vector2) { .x = boundary.x, .y = boundary.y }, origin, 2, BLUE);
     DrawLineEx(origin, (Vector2) {.x = origin.x + boundary.width, .y = origin.y}, 2, BLUE);
@@ -177,57 +159,82 @@ void plot_cost(Array2 cost, Rectangle boundary) {
     }
 }
 
-#define BITS 5
-int main(void) {
-    //graph.vals = malloc(sizeof(*graph.vals) * size);
-    //float theta = 0;
-    Init();
-    Arena arena = arena_alloc_alloc((size_t) 16 * 1024 * 1024);
-    Arena* arenaloc = &arena;
+typedef struct ModelInput
+{
+    Mat ti, to;
+    size_t nn_struct[100];
+    size_t count;
+} ModelInput;
 
-    //Array nn_struct = nn_struct_from_file("./demo.txt");
-    size_t mini_batch_size = 1;
-    float RegParam = 0;
-    float LearRate = 0.1;
-    size_t epochs = 1;
+ModelInput Adder(int BITS)
+{
     size_t n = (1 << BITS);
     size_t rows = n * n;
-    Mat ti = mat_alloc(NULL, rows, 2 * BITS);
-    Mat to = mat_alloc(NULL, rows, BITS + 1);
-    size_t nn_struct[] = { 2 * BITS, 4 * BITS, BITS + 1 };
-
-    for (size_t i = 0; i < ti.rows; i++) { // for every input in ti
+    ModelInput MI = 
+    {
+        .ti = mat_alloc(NULL, rows, 2 * BITS),
+        .to = mat_alloc(NULL, rows, BITS + 1),
+        .nn_struct = { 2 * BITS, 4 * BITS, BITS + 1 },
+        .count = 3,
+    };
+    for (size_t i = 0; i < MI.ti.rows; i++) { // for every input in ti
         size_t x = i / n;
         size_t y = i % n;
         size_t z = x + y; // the sum
         size_t OF = z >= n; // if the sum is larger than the largest value
         for (size_t j = 0; j < BITS; j++) { 
-            MAT_AT(ti, i, j) = (x >> j) & 1; // get every bit corresponding to that number
-            MAT_AT(ti, i, j + BITS) = (y >> j) & 1;
+            MAT_AT(MI.ti, i, j) = (x >> j) & 1; // get every bit corresponding to that number
+            MAT_AT(MI.ti, i, j + BITS) = (y >> j) & 1;
             if (OF) { // if OF then output is zero we don't care
-                MAT_AT(to, i, j) = 0;
+                MAT_AT(MI.to, i, j) = 0;
             }
             else { // else we calculate it per bit
-                MAT_AT(to, i, j) = (z >> j) & 1;
+                MAT_AT(MI.to, i, j) = (z >> j) & 1;
             }
         }
-        MAT_AT(to, i, BITS) = OF; // the OF flag
+        MAT_AT(MI.to, i, BITS) = OF; // the OF flag
     }
-    
-    //Mat traininput  = mat_alloc(arenaloc, 4, 2);
-    //Mat trainoutput = mat_alloc(arenaloc, 4, 1);
-    //for (size_t j = 0; j < 2; j++) {
-    //    for (size_t k = 0; k < 2; k++) {
-    //        size_t row = 2 * j + k;
-    //        MAT_AT(traininput, row, 0) = j;
-    //        MAT_AT(traininput, row, 1) = k;
-    //        MAT_AT(trainoutput, row, 0) = j ^ k;
-    //    }
-    //}
-    
-    //evaluate_gate(nn, testinput, testoutput);
-    nn = nn_alloc(NULL, nn_struct, ARRAY_LEN(nn_struct));
+    return MI;
+}
+
+ModelInput XorGate()
+{
+    ModelInput MI =
+    {
+        .ti = mat_alloc(NULL, 4, 2),
+        .to = mat_alloc(NULL, 4, 1),
+        .nn_struct = { 2, 2, 1 },
+        .count = 3,
+    };
+    for (size_t j = 0; j < 2; j++) {
+        for (size_t k = 0; k < 2; k++) {
+            size_t row = 2 * j + k;
+            MAT_AT(MI.ti, row, 0) = j;
+            MAT_AT(MI.ti, row, 1) = k;
+            MAT_AT(MI.to, row, 0) = j ^ k;
+        }
+    }
+    return MI;
+}
+
+int main(void) {
+
+    Arena arena = arena_alloc_alloc((size_t) 16 * 1024 * 1024);
+    Arena* arenaloc = &arena;
+    size_t mini_batch_size = 1;
+    float RegParam = 0;
+    float LearRate = 0.1;
+    size_t epochs = 1;
+
+    //ModelInput MI = XorGate();
+    ModelInput MI = Adder(5);
+    nn = nn_alloc(NULL, MI.nn_struct, MI.count);
     nn_rand(nn);
+
+    SetRandomSeed((unsigned int)time(0));
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_ALWAYS_RUN);
+    InitWindow(w, h, "NN");
+    SetTargetFPS(0);
     
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -244,9 +251,9 @@ int main(void) {
         };
 
         nn_render(nn, NNboundary);
-        learn(arenaloc, nn, ti, to, epochs, mini_batch_size, LearRate, RegParam);
-        learn(arenaloc, nn, ti, to, epochs, mini_batch_size, LearRate, RegParam);
-        float c = nn_cost(nn, ti, to);
+        learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
+        learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
+        float c = nn_cost(nn, MI.ti, MI.to);
         nob_da_append(&cost, c);
         Rectangle plot_boundary = {
             .x = 30,

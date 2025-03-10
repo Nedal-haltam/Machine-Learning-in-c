@@ -7,7 +7,6 @@
 #include "string.h"
 #include "assert.h"
 #include "math.h"
-#include "mnistfile.h"
 
 #define MAT_AT(m, i, j) (m).es[(i)*(m).stride + (j)]
 #define MIN(a,b) (((a)<(b)) ? (a) : (b))
@@ -26,21 +25,11 @@
 #define NN_INPUT(nn) (nn).layers[0].a
 
 
-mnist_dataset_t* train_dataset, * test_dataset;
-mnist_dataset_t batch;
 
-
-const char* train_images_file = "./MnistData/train-images.idx3-ubyte";
-const char* train_labels_file = "./MnistData/train-labels.idx1-ubyte";
-const char* test_images_file = "./MnistData/t10k-images.idx3-ubyte";
-const char* test_labels_file = "./MnistData/t10k-labels.idx1-ubyte";
-
-
-
-typedef enum
+typedef enum MatType
 {
     weights, biases
-} mattype;
+} MatType;
 
 typedef struct Mat {
     size_t rows;
@@ -623,7 +612,7 @@ void nn_rand(NN nn) {
     }
 }
 
-Mat* mats_alloc(Arena* arena, NN nn, enum mattype mt) {
+Mat* mats_alloc(Arena* arena, NN nn, MatType mt) {
     Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count - 1));
     assert(mats != NULL);
     if (mt == weights) {
@@ -770,74 +759,15 @@ void learn(Arena* arena, NN nn, Mat traininput, Mat trainoutput, size_t epochs, 
 
     size_t n = traininput.rows;
     size_t batches = n / mini_batch_size;
-    nabla_b = mats_alloc(arena, nn, (mattype)biases);
-    nabla_w = mats_alloc(arena, nn, (mattype)weights);
+    nabla_b = mats_alloc(arena, nn, (MatType)biases);
+    nabla_w = mats_alloc(arena, nn, (MatType)weights);
     for (size_t i = 0; i < epochs; i++) {
-        //printf("Epoch %zu / %zu processing\n\n", i+1, epochs);
         for (size_t j = 0; j < batches; j++) {
-            //printf("    Batch %zu / %zu\n\n", j+1, batches);
             Mat mini_batchin = mat_mat(traininput, j, j + (mini_batch_size - 1), 0, traininput.cols - 1);
             Mat mini_batchout = mat_mat(trainoutput, j, j + (mini_batch_size - 1), 0, trainoutput.cols - 1);
             update_mini_batch(arena, nn, mini_batchin, mini_batchout, LearRate, RegParam, n);
-            //printf("    Batch %zu / %zu done.\n\n", j+1, batches);
         }
-        //printf("Epoch %zu / %zu processing done.\n\n", i + 1, epochs);
-        //printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
-        //printf("intermed : %zu\n", arena_occupied_bytes(arena));
-    }
-    //printf("intermed : %zu\n", arena_occupied_bytes(arena));
-    
-}
-
-Mat trainset_to_mat(Arena* arena, size_t Numofinputs, size_t Numofoutputs, size_t set_size) {
-
-    if (Numofinputs != 0) {
-        Mat tinput = mat_alloc(arena, set_size, Numofinputs);
-
-        for (size_t i = 0; i < tinput.rows; i++) {
-            mnist_image_t image = train_dataset->images[i];
-
-            for (size_t j = 0; j < tinput.cols; j++) {
-                MAT_AT(tinput, i, j) = PIXEL_SCALE(image.pixels[j]);
-            }
-        }
-        return tinput;
-    }
-
-    else {
-        Mat toutput = mat_alloc(arena, set_size, Numofoutputs);
-        for (size_t i = 0; i < toutput.rows; i++) {
-            size_t label = (size_t)train_dataset->labels[i];
-
-            MAT_AT(toutput, i, label) = 1.0f;
-        }
-        return toutput;
-    }
-}
-
-Mat testset_to_mat(Arena* arena, size_t Numofinputs, size_t Numofoutputs, size_t set_size) {
-
-    if (Numofinputs != 0) {
-        Mat tinput = mat_alloc(arena, set_size, Numofinputs);
-
-        for (size_t i = 0; i < tinput.rows; i++) {
-            mnist_image_t image = test_dataset->images[i];
-
-            for (size_t j = 0; j < tinput.cols; j++) {
-                MAT_AT(tinput, i, j) = PIXEL_SCALE(image.pixels[j]);
-            }
-        }
-        return tinput;
-    }
-
-    else {
-        Mat toutput = mat_alloc(arena, set_size, Numofoutputs);
-        for (size_t i = 0; i < toutput.rows; i++) {
-            size_t label = (size_t)test_dataset->labels[i];
-
-            MAT_AT(toutput, i, label) = 1.0f;
-        }
-        return toutput;
+        printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
     }
 }
 #endif // !_NN_H
