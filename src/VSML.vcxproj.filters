@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="xor.c">
+    <ClCompile Include="xor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Neuralizer.cpp">

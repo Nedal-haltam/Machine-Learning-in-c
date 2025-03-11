@@ -1,3 +1,5 @@
+
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "time.h"
@@ -7,58 +9,24 @@
 #include "raylib.h"
 #include "NN.h"
 #include "process.h"
-#define nob_da_append_size_t(da, item) \
-    do {                                                                             \
-        if ((da)->count >= (da)->capacity) {                                         \
-            (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
-            (da)->items = (size_t*)realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
-            assert((da)->items != NULL && "Buy more RAM lol");                       \
-        }                                                                            \
-        (da)->items[(da)->count++] = (item);                                         \
-    } while (0)
-#define nob_da_append_float(da, item) \
-    do {                                                                             \
-        if ((da)->count >= (da)->capacity) {                                         \
-            (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
-            (da)->items = (float*)realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
-            assert((da)->items != NULL && "Buy more RAM lol");                       \
-        }                                                                            \
-        (da)->items[(da)->count++] = (item);                                         \
-    } while (0)
 
 
 
-Array_float cost = { 0 };
+
+NN::Array_float cost = { 0 };
 int w = 800;
 int h = 600;
-NN nn;
+NN::NN nn;
 
 float r = 9;
 float pad = 5;
 
-//Array nn_struct_from_file(const char* file_path) {
-//    Array nn_struct = {0};
-//    int buffer_size;
-//    unsigned char* buffer = LoadFileData(file_path, &buffer_size);
-//
-//    String_View content = sv_from_parts(buffer, buffer_size);
-//
-//    content = sv_trim_left(content);
-//    while (content.count > 0 && isdigit(content.data[0])) {
-//        size_t x = sv_chop_u64(&content);
-//        nob_da_append(&nn_struct, (size_t)x);
-//        content = sv_trim_left(content);
-//    }
-//
-//    return nn_struct;
-//}
-
-void nn_render(NN nn, Rectangle boundary) {
+void nn_render(NN::NN nn, Rectangle boundary) {
     size_t n = nn.count;
     assert(n > 0);
     float r = 10;
     float layer_gap = boundary.width / n;
-    
+
     for (size_t i = 0; i < nn.layers[0].a.cols; i++) {
         Vector2 center = { 0 };
         center.x = boundary.x + layer_gap / 2;
@@ -75,20 +43,20 @@ void nn_render(NN nn, Rectangle boundary) {
     // Drawing the network
     for (size_t l = 1; l < n; l++) {
         Vector2 center = { 0 };
-        size_t neuron_gap = (size_t) boundary.height / nn.layers[l].a.cols;
+        size_t neuron_gap = (size_t)boundary.height / nn.layers[l].a.cols;
         for (size_t i = 0; i < nn.layers[l].a.cols; i++) {
 
-            unsigned char b = (unsigned char) (255 * MAT_AT(nn.layers[l].b, 0, i));
-            unsigned char w = (unsigned char) (255 * MAT_AT(nn.layers[l].w, 0, i));
+            unsigned char b = (unsigned char)(255 * MAT_AT(nn.layers[l].b, 0, i));
+            unsigned char w = (unsigned char)(255 * MAT_AT(nn.layers[l].w, 0, i));
 
             Color color = { w, b, 128, 255 };
             center.x = boundary.x + (l)*layer_gap + layer_gap / 2;
             center.y = boundary.y + (i + 1) * (boundary.height / (nn.layers[l].a.cols + 1));
             DrawCircleV(center, r, color);
-            for (size_t k = 0; l < n-1 && k < nn.layers[l+1].a.cols; k++) {
+            for (size_t k = 0; l < n - 1 && k < nn.layers[l + 1].a.cols; k++) {
                 Vector2 end = {
-                    end.x = boundary.x + (l+1) * layer_gap + layer_gap / 2,
-                    end.y = boundary.y + (k + 1) * (boundary.height / (nn.layers[l+1].a.cols + 1)),
+                    end.x = boundary.x + (l + 1) * layer_gap + layer_gap / 2,
+                    end.y = boundary.y + (k + 1) * (boundary.height / (nn.layers[l + 1].a.cols + 1)),
                 };
                 DrawLineEx(center, end, 1, WHITE);
             }
@@ -117,7 +85,7 @@ void update() {
     }
 }
 
-void cost_max(Array_float cost, float *max) {
+void cost_max(NN::Array_float cost, float* max) {
     *max = FLT_MIN;
     for (size_t i = 0; i < cost.count; i++) {
         if (*max < cost.items[i]) {
@@ -126,41 +94,41 @@ void cost_max(Array_float cost, float *max) {
     }
 }
 
-void plot_cost(Array_float cost, Rectangle boundary) {
+void plot_cost(NN::Array_float cost, Rectangle boundary) {
     Vector2 origin = { origin.x = boundary.x, origin.y = boundary.x + boundary.height };
     DrawLineEx({ boundary.x, boundary.y }, origin, 2, BLUE);
-    DrawLineEx(origin, { origin.x + boundary.width, origin.y}, 2, BLUE);
+    DrawLineEx(origin, { origin.x + boundary.width, origin.y }, 2, BLUE);
 
     float max;
     cost_max(cost, &max);
     size_t n = cost.count;
     if (n < 100) n = 100;
-    for (size_t i = 0; i+1 < cost.count; i++) {
+    for (size_t i = 0; i + 1 < cost.count; i++) {
         Vector2 start = {
             start.x = boundary.x + (float)boundary.width / n * i,
             start.y = boundary.y + (1 - (cost.items[i]) / (max)) * boundary.height,
         };
         Vector2 end = {
-            end.x = boundary.x + (float)boundary.width / n * (i+1),
-            end.y = boundary.y + (1 - (cost.items[i+1]) / (max)) * boundary.height,
+            end.x = boundary.x + (float)boundary.width / n * (i + 1),
+            end.y = boundary.y + (1 - (cost.items[i + 1]) / (max)) * boundary.height,
         };
-        DrawLineEx(start, end, boundary.height*0.002, RED);
+        DrawLineEx(start, end, boundary.height * 0.002, RED);
     }
 }
 
-ModelInput Adder(int BITS)
+NN::ModelInput Adder(int BITS)
 {
     size_t n = (static_cast<size_t>(1) << BITS);
     size_t rows = n * n;
 
-    Array_size_t NNstruct = {0};
+    NN::Array_size_t NNstruct = { 0 };
     nob_da_append_size_t(&NNstruct, 2 * BITS);
     nob_da_append_size_t(&NNstruct, 4 * BITS);
     nob_da_append_size_t(&NNstruct, BITS + 1);
-    ModelInput MI = 
+    NN::ModelInput MI =
     {
-        mat_alloc(NULL, rows, 2 * BITS),
-        mat_alloc(NULL, rows, BITS + 1),
+        NN::mat_alloc(NULL, rows, 2 * BITS),
+        NN::mat_alloc(NULL, rows, BITS + 1),
         NNstruct,
     };
     for (size_t i = 0; i < MI.ti.rows; i++) { // for every input in ti
@@ -168,7 +136,7 @@ ModelInput Adder(int BITS)
         size_t y = i % n;
         size_t z = x + y; // the sum
         size_t OF = z >= n; // if the sum is larger than the largest value
-        for (size_t j = 0; j < BITS; j++) { 
+        for (size_t j = 0; j < BITS; j++) {
             MAT_AT(MI.ti, i, j) = (x >> j) & 1; // get every bit corresponding to that number
             MAT_AT(MI.ti, i, j + BITS) = (y >> j) & 1;
             if (OF) { // if OF then output is zero we don't care
@@ -183,16 +151,16 @@ ModelInput Adder(int BITS)
     return MI;
 }
 
-ModelInput XorGate()
+NN::ModelInput XorGate()
 {
-    Array_size_t NNstruct = { 0 };
+    NN::Array_size_t NNstruct = { 0 };
     nob_da_append_size_t(&NNstruct, 2);
     nob_da_append_size_t(&NNstruct, 2);
     nob_da_append_size_t(&NNstruct, 1);
-    ModelInput MI =
+    NN::ModelInput MI =
     {
-        mat_alloc(NULL, 4, 2),
-        mat_alloc(NULL, 4, 1),
+        NN::mat_alloc(NULL, 4, 2),
+        NN::mat_alloc(NULL, 4, 1),
         NNstruct,
     };
     for (size_t j = 0; j < 2; j++) {
@@ -208,17 +176,14 @@ ModelInput XorGate()
 
 int main(void) {
 
-    Arena arena = arena_alloc_alloc((size_t) 16 * 1024 * 1024);
-    Arena* arenaloc = &arena;
+    NN::Arena arena = NN::arena_alloc_alloc((size_t)16 * 1024 * 1024);
+    NN::Arena* arenaloc = &arena;
     size_t mini_batch_size = 1;
     float RegParam = 0;
-    float LearRate = 0.1;
+    float LearRate = 0.1f;
     size_t epochs = 1;
 
-    //ModelInput MI = XorGate();
-    ModelInput MI = Adder(5);
-    //printf("NNstruct[0] = %u", MI.nn_struct[0]);
-    //return 0;
+    NN::ModelInput MI = Adder(6);
     nn = nn_alloc(NULL, MI);
     nn_rand(nn);
 
@@ -226,7 +191,7 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_ALWAYS_RUN);
     InitWindow(w, h, "NN");
     SetTargetFPS(0);
-    
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground({ 0x18, 0x18, 0x18, 0x18 });
@@ -237,8 +202,8 @@ int main(void) {
         Rectangle NNboundary = {
             boundw,
             boundh,
-            w - (boundw),
-            h / 2,
+            (float)w - (boundw),
+            (float)h / 2,
         };
 
         nn_render(nn, NNboundary);
@@ -250,7 +215,7 @@ int main(void) {
             30,
             30,
             w - NNboundary.width,
-            h-150,
+            h - 150,
         };
         plot_cost(cost, plot_boundary);
 
@@ -261,3 +226,6 @@ int main(void) {
     CloseWindow();
     return 0;
 }
+
+
+
