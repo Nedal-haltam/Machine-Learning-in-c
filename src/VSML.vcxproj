@@ -134,8 +134,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Neuralizer.cpp" />
-    <ClCompile Include="NN.h" />
     <ClCompile Include="xor.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NN.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

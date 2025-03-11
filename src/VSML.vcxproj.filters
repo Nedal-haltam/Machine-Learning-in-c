@@ -18,11 +18,13 @@
     <ClCompile Include="xor.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NN.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Neuralizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NN.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

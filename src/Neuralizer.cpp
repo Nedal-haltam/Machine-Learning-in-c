@@ -7,21 +7,16 @@
 #include "raylib.h"
 #include "NN.h"
 #include "process.h"
-
-typedef struct {
-    size_t count;
-    size_t capacity;
-    size_t* items;
-} Array_size_t;
-typedef struct {
-    size_t count;
-    size_t capacity;
-    float* items;
-} Array_float;
-
-Array_float cost = { 0 };
-
-#define nob_da_append(da, item) \
+#define nob_da_append_size_t(da, item) \
+    do {                                                                             \
+        if ((da)->count >= (da)->capacity) {                                         \
+            (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
+            (da)->items = (size_t*)realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
+            assert((da)->items != NULL && "Buy more RAM lol");                       \
+        }                                                                            \
+        (da)->items[(da)->count++] = (item);                                         \
+    } while (0)
+#define nob_da_append_float(da, item) \
     do {                                                                             \
         if ((da)->count >= (da)->capacity) {                                         \
             (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
@@ -32,21 +27,14 @@ Array_float cost = { 0 };
     } while (0)
 
 
+
+Array_float cost = { 0 };
 int w = 800;
 int h = 600;
 NN nn;
 
 float r = 9;
 float pad = 5;
-
-static void ToggleFullScreen() {
-    if (IsWindowMaximized()) {
-        RestoreWindow();
-    }
-    else {
-        MaximizeWindow();
-    }
-}
 
 //Array nn_struct_from_file(const char* file_path) {
 //    Array nn_struct = {0};
@@ -108,24 +96,25 @@ void nn_render(NN nn, Rectangle boundary) {
     }
 }
 
+void ToggleFullScreen() {
+    if (IsWindowMaximized()) {
+        RestoreWindow();
+    }
+    else {
+        MaximizeWindow();
+    }
+}
 void update() {
     w = GetScreenWidth();
     h = GetScreenHeight();
     if (IsKeyDown(KEY_R)) {
         nn_rand(nn);
-        free(cost.items);
-        cost.items = NULL;
-        cost.count = 0;
-        cost.capacity = 0;
+        cost.Destruct();
     }
     if (IsKeyPressed(KEY_F)) {
 
         ToggleFullScreen();
     }
-    if (IsKeyPressed(KEY_B)) {
-        ToggleBorderlessWindowed();
-    }
-
 }
 
 void cost_max(Array_float cost, float *max) {
@@ -159,24 +148,20 @@ void plot_cost(Array_float cost, Rectangle boundary) {
     }
 }
 
-typedef struct ModelInput
-{
-public:
-    Mat ti, to;
-    size_t nn_struct[100];
-    size_t count;
-} ModelInput;
-
 ModelInput Adder(int BITS)
 {
-    size_t n = (1 << BITS);
+    size_t n = (static_cast<size_t>(1) << BITS);
     size_t rows = n * n;
+
+    Array_size_t NNstruct = {0};
+    nob_da_append_size_t(&NNstruct, 2 * BITS);
+    nob_da_append_size_t(&NNstruct, 4 * BITS);
+    nob_da_append_size_t(&NNstruct, BITS + 1);
     ModelInput MI = 
     {
         mat_alloc(NULL, rows, 2 * BITS),
         mat_alloc(NULL, rows, BITS + 1),
-        { 2 * BITS, 4 * BITS, BITS + 1 },
-        3,
+        NNstruct,
     };
     for (size_t i = 0; i < MI.ti.rows; i++) { // for every input in ti
         size_t x = i / n;
@@ -200,12 +185,15 @@ ModelInput Adder(int BITS)
 
 ModelInput XorGate()
 {
+    Array_size_t NNstruct = { 0 };
+    nob_da_append_size_t(&NNstruct, 2);
+    nob_da_append_size_t(&NNstruct, 2);
+    nob_da_append_size_t(&NNstruct, 1);
     ModelInput MI =
     {
         mat_alloc(NULL, 4, 2),
         mat_alloc(NULL, 4, 1),
-        { 2, 2, 1 },
-        3,
+        NNstruct,
     };
     for (size_t j = 0; j < 2; j++) {
         for (size_t k = 0; k < 2; k++) {
@@ -229,7 +217,9 @@ int main(void) {
 
     //ModelInput MI = XorGate();
     ModelInput MI = Adder(5);
-    nn = nn_alloc(NULL, MI.nn_struct, MI.count);
+    //printf("NNstruct[0] = %u", MI.nn_struct[0]);
+    //return 0;
+    nn = nn_alloc(NULL, MI);
     nn_rand(nn);
 
     SetRandomSeed((unsigned int)time(0));
@@ -240,7 +230,7 @@ int main(void) {
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground({ 0x18, 0x18, 0x18, 0x18 });
-
+        DrawFPS(0, 0);
         update();
         float boundw = 0.6f * w;
         float boundh = 0;
@@ -255,7 +245,7 @@ int main(void) {
         learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
         learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
         float c = nn_cost(nn, MI.ti, MI.to);
-        nob_da_append(&cost, c);
+        nob_da_append_float(&cost, c);
         Rectangle plot_boundary = {
             30,
             30,
