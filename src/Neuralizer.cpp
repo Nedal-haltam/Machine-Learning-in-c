@@ -189,8 +189,8 @@ int main(void) {
 
     SetRandomSeed((unsigned int)time(0));
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_ALWAYS_RUN);
-    InitWindow(w, h, "NN");
     SetTargetFPS(0);
+    InitWindow(w, h, "NN");
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -208,7 +208,7 @@ int main(void) {
 
         nn_render(nn, NNboundary);
         learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
-        learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
+        //learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
         float c = nn_cost(nn, MI.ti, MI.to);
         nob_da_append_float(&cost, c);
         Rectangle plot_boundary = {

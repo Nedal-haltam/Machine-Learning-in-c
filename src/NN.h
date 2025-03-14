@@ -1,5 +1,12 @@
 #pragma once
 
+#include "stdio.h"
+#include "stdlib.h"
+#include "time.h"
+#include "float.h"
+#include "assert.h"
+#include "math.h"
+#include "process.h"
 
 
 #define MAT_AT(m, i, j) (m).es[(i)*(m).stride + (j)]
