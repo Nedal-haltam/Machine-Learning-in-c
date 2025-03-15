@@ -208,7 +208,6 @@ int main(void) {
 
         nn_render(nn, NNboundary);
         learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
-        //learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
         float c = nn_cost(nn, MI.ti, MI.to);
         nob_da_append_float(&cost, c);
         Rectangle plot_boundary = {
