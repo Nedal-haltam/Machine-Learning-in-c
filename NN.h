@@ -26,25 +26,6 @@
 #define NN_INPUT(nn) (nn).layers[0].a
 
 #define BP 1
-#define nob_da_append_size_t(da, item) \
-    do {                                                                             \
-        if ((da)->count >= (da)->capacity) {                                         \
-            (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
-            (da)->items = (size_t*)realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
-            assert((da)->items != NULL && "Buy more RAM lol");                       \
-        }                                                                            \
-        (da)->items[(da)->count++] = (item);                                         \
-    } while (0)
-#define nob_da_append_float(da, item) \
-    do {                                                                             \
-        if ((da)->count >= (da)->capacity) {                                         \
-            (da)->capacity = (da)->capacity == 0 ? 8 : (da)->capacity*2;             \
-            (da)->items = (float*)realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
-            assert((da)->items != NULL && "Buy more RAM lol");                       \
-        }                                                                            \
-        (da)->items[(da)->count++] = (item);                                         \
-    } while (0)
-
 
 namespace NN
 {
@@ -60,30 +41,6 @@ namespace NN
         float* es;
     } Mat;
 
-    typedef struct Array_size_t {
-        size_t count;
-        size_t capacity;
-        size_t* items;
-        void Destruct()
-        {
-            count = 0;
-            capacity = 0;
-            free(items);
-            items = NULL;
-        }
-    } Array_size_t;
-    typedef struct Array_float {
-        size_t count;
-        size_t capacity;
-        float* items;
-        void Destruct()
-        {
-            count = 0;
-            capacity = 0;
-            free(items);
-            items = NULL;
-        }
-    } Array_float;
     typedef struct ModelInput
     {
     public:

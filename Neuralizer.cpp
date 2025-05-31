@@ -16,7 +16,7 @@ namespace raylib {
 
 
 
-NN::Array_float cost = {};
+std::vector<float> cost = {};
 int w = 800;
 int h = 600;
 NN::NN nn;
@@ -81,7 +81,6 @@ void update() {
     h = raylib::GetScreenHeight();
     if (raylib::IsKeyDown(raylib::KEY_R)) {
         nn_rand(nn);
-        cost.Destruct();
     }
     if (raylib::IsKeyPressed(raylib::KEY_F)) {
 
@@ -89,32 +88,32 @@ void update() {
     }
 }
 
-void cost_max(NN::Array_float cost, float* max) {
+void cost_max(std::vector<float> cost, float* max) {
     *max = FLT_MIN;
-    for (size_t i = 0; i < cost.count; i++) {
-        if (*max < cost.items[i]) {
-            *max = cost.items[i];
+    for (size_t i = 0; i < cost.size(); i++) {
+        if (*max < cost[i]) {
+            *max = cost[i];
         }
     }
 }
 
-void plot_cost(NN::Array_float cost, raylib::Rectangle boundary) {
+void plot_cost(std::vector<float> cost, raylib::Rectangle boundary) {
     raylib::Vector2 origin = { origin.x = boundary.x, origin.y = boundary.x + boundary.height };
     DrawLineEx({ boundary.x, boundary.y }, origin, 2, raylib::BLUE);
     DrawLineEx(origin, { origin.x + boundary.width, origin.y }, 2, raylib::BLUE);
 
     float max;
     cost_max(cost, &max);
-    size_t n = cost.count;
+    size_t n = cost.size();
     if (n < 100) n = 100;
-    for (size_t i = 0; i + 1 < cost.count; i++) {
+    for (size_t i = 0; i + 1 < cost.size(); i++) {
         raylib::Vector2 start = {
             start.x = boundary.x + (float)boundary.width / n * i,
-            start.y = boundary.y + (1 - (cost.items[i]) / (max)) * boundary.height,
+            start.y = boundary.y + (1 - (cost[i]) / (max)) * boundary.height,
         };
         raylib::Vector2 end = {
             end.x = boundary.x + (float)boundary.width / n * (i + 1),
-            end.y = boundary.y + (1 - (cost.items[i + 1]) / (max)) * boundary.height,
+            end.y = boundary.y + (1 - (cost[i + 1]) / (max)) * boundary.height,
         };
         raylib::DrawLineEx(start, end, boundary.height * 0.002, raylib::RED);
     }
@@ -213,7 +212,7 @@ int main(void) {
         nn_render(nn, NNboundary);
         learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
         float c = nn_cost(nn, MI.ti, MI.to);
-        nob_da_append_float(&cost, c);
+        cost.push_back(c);
         raylib::Rectangle plot_boundary = {
             (float)30,
             (float)30,
