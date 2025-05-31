@@ -186,6 +186,7 @@ int main(void) {
     float LearRate = 0.1f;
     size_t epochs = 1;
 
+    // NN::ModelInput MI = XorGate();
     NN::ModelInput MI = Adder(6);
     nn = nn_alloc(NULL, MI);
     nn_rand(nn);
