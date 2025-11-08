@@ -1,11 +1,13 @@
-
-
-
+.PHONY: all build run
 
 all: build run
 
-build: Neuralizer.cpp
-	g++ Neuralizer.cpp -O3 -Wall -Wextra -Wpedantic -Iraylib/include -Lraylib/lib -lraylib -lgdi32 -lwinmm -std=c++20 -o out.exe
+build: clean
+	g++ Neuralizer.cpp -O3 -Wall -Wextra -Wpedantic -I./raylib-5.5_linux_amd64/include/ -o ./build/out -L./raylib-5.5_linux_amd64/lib/ -l:libraylib.a -lm
 
-run: out.exe
-	.\out.exe
+run:
+	./build/out
+
+clean:
+	rm -rf ./build
+	mkdir -p ./build
