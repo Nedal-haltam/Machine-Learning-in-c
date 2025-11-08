@@ -26,7 +26,7 @@
 
 #define BP 1
 
-namespace NN
+namespace nn
 {
     typedef enum MatType
     {
@@ -57,7 +57,7 @@ namespace NN
     typedef struct {
         Layer* layers;
         size_t count;
-    } NN;
+    } Nnet;
 
     typedef struct {
         //Arena* next;
@@ -127,8 +127,8 @@ namespace NN
     }
 
 
-    NN nn_alloc(Arena* arena, ModelInput MI) {
-        NN nn = {};
+    Nnet nn_alloc(Arena* arena, ModelInput MI) {
+        Nnet nn = {};
         nn.count = MI.NNstruct.size();
         nn.layers = (Layer*)arena_alloc(arena, nn.count * sizeof(*nn.layers));
 
@@ -395,7 +395,7 @@ namespace NN
         printf("]\n");
     }
 
-    void nn_print(NN nn, const char* name) {
+    void nn_print(Nnet nn, const char* name) {
         printf("%s = [\n", name);
         for (size_t i = 1; i < nn.count; i++) {
             LAY_PRINT(nn.layers[i]);
@@ -552,7 +552,7 @@ namespace NN
         //return crossentropy(pred, output);
     }
 
-    void feed_forward(NN nn) {
+    void feed_forward(Nnet nn) {
 
         Mat temp = NN_INPUT(nn);
         for (size_t i = 1; i < nn.count; i++) {
@@ -570,7 +570,7 @@ namespace NN
         }
     }
 
-    float nn_cost(NN nn, Mat tinput, Mat toutput) {
+    float nn_cost(Nnet nn, Mat tinput, Mat toutput) {
         float sum = 0;
         for (size_t i = 0; i < tinput.rows; i++) {
             mat_copy(NN_INPUT(nn), mat_row(tinput, i));
@@ -595,7 +595,7 @@ namespace NN
 
 
 
-    void nn_rand(NN nn) {
+    void nn_rand(Nnet nn) {
         for (size_t i = 1; i < nn.count; i++) {
             mat_rand(nn.layers[i].w, 0, 1);
             mat_rand(nn.layers[i].b, 0, 1);
@@ -603,7 +603,7 @@ namespace NN
         }
     }
 
-    Mat* mats_alloc(Arena* arena, NN nn, MatType mt) {
+    Mat* mats_alloc(Arena* arena, Nnet nn, MatType mt) {
         Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count - 1));
         assert(mats != NULL);
         if (mt == weights) {
@@ -619,7 +619,7 @@ namespace NN
         return mats;
     }
 
-    Mat* gasalloc(Arena* arena, NN nn) {
+    Mat* gasalloc(Arena* arena, Nnet nn) {
         Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count));
         assert(mats != NULL);
         for (size_t i = 0; i < nn.count; i++) {
@@ -629,14 +629,14 @@ namespace NN
     }
 
 
-    void reset_nablas(NN nn) {
+    void reset_nablas(Nnet nn) {
         for (size_t i = 0; i < nn.count - 1; i++) {
             mat_fill(nabla_b[i], 0);
             mat_fill(nabla_w[i], 0);
         }
     }
 
-    void finitediff(NN nn, Mat input, Mat output) {
+    void finitediff(Nnet nn, Mat input, Mat output) {
         // approximate the derivative of the cost WRT each weight and bias
         float currcost = nn_cost(nn, input, output);
 
@@ -668,7 +668,7 @@ namespace NN
         }
     }
 
-    void backprop(Arena* arena, NN nn, Mat input, Mat output) {
+    void backprop(Arena* arena, Nnet nn, Mat input, Mat output) {
         (void)arena;
         mat_copy(NN_INPUT(nn), input);
         feed_forward(nn);
@@ -704,7 +704,7 @@ namespace NN
             }
         }
     }
-    void update_mini_batch(Arena* arena, NN nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n) {
+    void update_mini_batch(Arena* arena, Nnet nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n) {
 
         for (size_t i = 0; i < mini_batchin.rows; i++) {
             Mat input = mat_row(mini_batchin, i);
@@ -726,7 +726,7 @@ namespace NN
     }
 
 
-    void learn(Arena* arena, NN nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam) {
+    void learn(Arena* arena, Nnet nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam) {
 
         size_t n = traininput.rows;
         size_t batches = n / mini_batch_size;
@@ -738,7 +738,7 @@ namespace NN
                 Mat mini_batchout = mat_mat(trainoutput, j, j + (mini_batch_size - 1), 0, trainoutput.cols - 1);
                 update_mini_batch(arena, nn, mini_batchin, mini_batchout, LearRate, RegParam, n);
             }
-            printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
+            // printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
         }
     }
 

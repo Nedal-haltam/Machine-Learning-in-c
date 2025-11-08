@@ -3,7 +3,7 @@
 #include "time.h"
 #include "assert.h"
 #include "math.h"
-#include "NN.h"
+#include "nn.h"
 
 static void evaluate_gate(NN::NN nn, NN::Mat testinput, NN::Mat testoutput) {
    size_t eval = 0;

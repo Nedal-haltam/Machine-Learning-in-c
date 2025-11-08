@@ -10,7 +10,7 @@
 namespace raylib {
     #include <raylib.h>
 }
-#include "NN.h"
+#include "nn.h"
 
 
 
@@ -18,12 +18,12 @@ namespace raylib {
 std::vector<float> cost = {};
 int w = 800;
 int h = 600;
-NN::NN nn;
+nn::Nnet nnet;
 
 float r = 9;
 float pad = 5;
 
-void nn_render(NN::NN nn, raylib::Rectangle boundary) {
+void nn_render(nn::Nnet nn, raylib::Rectangle boundary) {
     size_t n = nn.count;
     assert(n > 0);
     float r = 10;
@@ -75,11 +75,13 @@ void ToggleFullScreen() {
         raylib::MaximizeWindow();
     }
 }
+
 void update() {
     w = raylib::GetScreenWidth();
     h = raylib::GetScreenHeight();
     if (raylib::IsKeyDown(raylib::KEY_R)) {
-        nn_rand(nn);
+        nn_rand(nnet);
+        cost.clear();
     }
     if (raylib::IsKeyPressed(raylib::KEY_F)) {
 
@@ -118,7 +120,7 @@ void plot_cost(std::vector<float> cost, raylib::Rectangle boundary) {
     }
 }
 
-NN::ModelInput Adder(int BITS)
+nn::ModelInput Adder(int BITS)
 {
     size_t n = (static_cast<size_t>(1) << BITS);
     size_t rows = n * n;
@@ -127,10 +129,10 @@ NN::ModelInput Adder(int BITS)
     NNstruct.push_back(2 * BITS);
     NNstruct.push_back(4 * BITS);
     NNstruct.push_back(BITS + 1);
-    NN::ModelInput MI =
+    nn::ModelInput MI =
     {
-        NN::mat_alloc(NULL, rows, 2 * BITS),
-        NN::mat_alloc(NULL, rows, BITS + 1),
+        nn::mat_alloc(NULL, rows, 2 * BITS),
+        nn::mat_alloc(NULL, rows, BITS + 1),
         NNstruct,
     };
     for (size_t i = 0; i < MI.ti.rows; i++) { // for every input in ti
@@ -153,16 +155,16 @@ NN::ModelInput Adder(int BITS)
     return MI;
 }
 
-NN::ModelInput XorGate()
+nn::ModelInput XorGate()
 {
     std::vector<size_t> NNstruct = std::vector<size_t>();
     NNstruct.push_back(2);
     NNstruct.push_back(2);
     NNstruct.push_back(1);
-    NN::ModelInput MI =
+    nn::ModelInput MI =
     {
-        NN::mat_alloc(NULL, 4, 2),
-        NN::mat_alloc(NULL, 4, 1),
+        nn::mat_alloc(NULL, 4, 2),
+        nn::mat_alloc(NULL, 4, 1),
         NNstruct,
     };
     for (size_t j = 0; j < 2; j++) {
@@ -176,19 +178,19 @@ NN::ModelInput XorGate()
     return MI;
 }
 
-int main(void) {
-
-    NN::Arena arena = NN::arena_alloc_alloc((size_t)16 * 1024 * 1024);
-    NN::Arena* arenaloc = &arena;
+int main(void)
+{
+    nn::Arena arena = nn::arena_alloc_alloc((size_t)16 * 1024 * 1024);
+    nn::Arena* arenaloc = &arena;
     size_t mini_batch_size = 1;
     float RegParam = 0;
     float LearRate = 0.1f;
     size_t epochs = 1;
 
-    // NN::ModelInput MI = XorGate();
-    NN::ModelInput MI = Adder(6);
-    nn = nn_alloc(NULL, MI);
-    nn_rand(nn);
+    nn::ModelInput MI = XorGate();
+    // nn::ModelInput MI = Adder(6);
+    nnet = nn_alloc(NULL, MI);
+    nn_rand(nnet);
 
     raylib::SetRandomSeed((unsigned int)time(0));
     raylib::SetConfigFlags(raylib::FLAG_WINDOW_RESIZABLE | raylib::FLAG_WINDOW_ALWAYS_RUN);
@@ -209,9 +211,9 @@ int main(void) {
             (float)h / 2,
         };
 
-        nn_render(nn, NNboundary);
-        learn(arenaloc, nn, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
-        float c = nn_cost(nn, MI.ti, MI.to);
+        nn_render(nnet, NNboundary);
+        learn(arenaloc, nnet, MI.ti, MI.to, epochs, mini_batch_size, LearRate, RegParam);
+        float c = nn_cost(nnet, MI.ti, MI.to);
         cost.push_back(c);
         raylib::Rectangle plot_boundary = {
             (float)30,
