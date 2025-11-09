@@ -68,6 +68,9 @@ namespace nn
 
     static Mat* nabla_b = {};
     static Mat* nabla_w = {};
+    static Mat* Vb = {};
+    static Mat* Vw = {};
+    static float MOMENTUM_GAMMA = 0.9f;
     static float eps = 0.001f;
     Arena arena_alloc_alloc(size_t capacity_bytes) {
         Arena arena = {};
@@ -470,51 +473,50 @@ namespace nn
             }
         }
     }
-
     void mat_normalized_tanh_dir(Mat m) {
         mat_normalized_tanh(m);
         mat_pow(m, 2);
         mat_mul_const(m, -1);
         mat_add_const(m, 1);
     }
+
     void mat_outputlayer_activation(Mat m) {
-        mat_sigmoid(m);
+        // mat_sigmoid(m);
         //mat_normalized_tanh(m);
         //mat_Activation_Softmax(m);
     }
     void mat_outputlayer_activation_dir(Mat m) {
-        mat_sigmoid_dir(m);
+        // mat_sigmoid_dir(m);
         //mat_normalized_tanh_dir(m);
+        mat_fill(m, 1.0f);
     }
     float outputlayer_activation(float z) {
-        return sigmoid(z);
+        return z;
+        // return sigmoid(z);
         //return tanhf(z);
         //return Activation_Softmax(z);
     }
     float outputlayer_activation_dir(float z) {
-        return sigmoid_dir(z);
+        return 1.0f;
+        // return sigmoid_dir(z);
         //return (1 - (tanhf(z) * tanhf(z)));
     }
 
-
-
-
-    float hiddenlayer_activation(float z) {
-        //return Activation_ReLU(z);
-        return sigmoid(z);
-    }
-    float hiddenlayer_activation_dir(float z) {
-        //return Activation_ReLU_dir(z);
-        return sigmoid_dir(z);
-    }
-
     void mat_hiddenlayer_activation(Mat m) {
-        //mat_Activation_ReLU(m);
-        mat_sigmoid(m);
+        mat_Activation_ReLU(m);
+        // mat_sigmoid(m);
     }
     void mat_hiddenlayer_activation_dir(Mat m) {
-        //mat_Activation_ReLU_dir(m);
-        mat_sigmoid_dir(m);
+        mat_Activation_ReLU_dir(m);
+        // mat_sigmoid_dir(m);
+    }
+    float hiddenlayer_activation(float z) {
+        return Activation_ReLU(z);
+        // return sigmoid(z);
+    }
+    float hiddenlayer_activation_dir(float z) {
+        return Activation_ReLU_dir(z);
+        // return sigmoid_dir(z);
     }
 
 
@@ -592,16 +594,31 @@ namespace nn
     }
 
 
-
-
-
     void nn_rand(Nnet nn) {
         for (size_t i = 1; i < nn.count; i++) {
-            mat_rand(nn.layers[i].w, 0, 1);
-            mat_rand(nn.layers[i].b, 0, 1);
-            mat_mul_const(nn.layers[i].w, (1.0f / sqrtf((float)nn.layers[i].w.rows)));
+            // New Scaling: rand_float() * (hi - lo) + lo
+            // For N(0, 1): rand_float() * 2 - 1
+            float scale = sqrtf(2.0f / (float)nn.layers[i].w.rows);
+            for (size_t j = 0; j < nn.layers[i].w.rows; j++) {
+                for (size_t k = 0; k < nn.layers[i].w.cols; k++) {
+                    // Random number from -1 to 1
+                    float r = (float)rand() / (float)RAND_MAX * 2.0f - 1.0f;
+                    MAT_AT(nn.layers[i].w, j, k) = r * scale; // He Initialization
+                }
+            }
+            mat_fill(nn.layers[i].b, 0.0f); 
+            // The original scaling logic is now integrated above:
+            // mat_mul_const(nn.layers[i].w, (1.0f / sqrtf((float)nn.layers[i].w.rows))); // REMOVE
         }
     }
+
+    // void nn_rand(Nnet nn) {
+    //     for (size_t i = 1; i < nn.count; i++) {
+    //         mat_rand(nn.layers[i].w, 0, 1);
+    //         mat_fill(nn.layers[i].b, 0);
+    //         mat_mul_const(nn.layers[i].w, (1.0f / sqrtf((float)nn.layers[i].w.rows)));
+    //     }
+    // }
 
     Mat* mats_alloc(Arena* arena, Nnet nn, MatType mt) {
         Mat* mats = (Mat*)arena_alloc(arena, sizeof(Mat) * (nn.count - 1));
@@ -672,7 +689,7 @@ namespace nn
         (void)arena;
         mat_copy(NN_INPUT(nn), input);
         feed_forward(nn);
-        float ss = 2;
+        float ss = 1;
         for (size_t j = 0; j < nn.layers[nn.count - 1].a.cols; ++j) {
             float a = MAT_AT(nn.layers[nn.count - 1].a, 0, j);
             float da = ss * (a - MAT_AT(output, 0, j));
@@ -704,8 +721,9 @@ namespace nn
             }
         }
     }
-    void update_mini_batch(Arena* arena, Nnet nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n) {
 
+    void update_mini_batch(Arena* arena, Nnet nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n)
+    {
         for (size_t i = 0; i < mini_batchin.rows; i++) {
             Mat input = mat_row(mini_batchin, i);
             Mat output = mat_row(mini_batchout, i);
@@ -716,29 +734,70 @@ namespace nn
 #endif
         }
         for (size_t i = 0; i < nn.count - 1; i++) {
-            mat_mul_const(nabla_w[i], LearRate / (float)mini_batchin.rows);
-            mat_mul_const(nabla_b[i], LearRate / (float)mini_batchin.rows);
-            mat_mul_const(nn.layers[i + 1].w, (1 - LearRate * (RegParam / n)));
-            mat_subEW(nn.layers[i + 1].w, nn.layers[i + 1].w, nabla_w[i]);
-            mat_subEW(nn.layers[i + 1].b, nn.layers[i + 1].b, nabla_b[i]);
+            float inv_batch_size = 1.0f / (float)mini_batchin.rows;
+            
+            mat_mul_const(Vw[i], MOMENTUM_GAMMA); // Vw = gamma * Vw
+            mat_mul_const(nabla_w[i], inv_batch_size); // nabla_w = nabla_w / batch_size (Average Gradient)
+            mat_addEW(Vw[i], Vw[i], nabla_w[i]); // Vw = Vw + (nabla_w / batch_size)
+            
+            mat_mul_const(Vb[i], MOMENTUM_GAMMA); // Vb = gamma * Vb
+            mat_mul_const(nabla_b[i], inv_batch_size); // nabla_b = nabla_b / batch_size
+            mat_addEW(Vb[i], Vb[i], nabla_b[i]); // Vb = Vb + (nabla_b / batch_size)
+            
+            mat_mul_const(nn.layers[i + 1].w, (1 - LearRate * (RegParam / n))); // L2 Regularization
+            
+            mat_mul_const(Vw[i], LearRate); // Vw = LR * Vw
+            mat_subEW(nn.layers[i + 1].w, nn.layers[i + 1].w, Vw[i]); // W = W - LR * Vw
+            
+            mat_mul_const(Vb[i], LearRate); // Vb = LR * Vb
+            mat_subEW(nn.layers[i + 1].b, nn.layers[i + 1].b, Vb[i]); // B = B - LR * Vb
         }
         reset_nablas(nn);
     }
+//     void update_mini_batch(Arena* arena, Nnet nn, Mat mini_batchin, Mat mini_batchout, float LearRate, float RegParam, size_t n)
+//     {
+//         for (size_t i = 0; i < mini_batchin.rows; i++) {
+//             Mat input = mat_row(mini_batchin, i);
+//             Mat output = mat_row(mini_batchout, i);
+// #if BP
+//             backprop(arena, nn, input, output);
+// #else 
+//             finitediff(nn, input, output);
+// #endif
+//         }
+//         for (size_t i = 0; i < nn.count - 1; i++) {
+//             mat_mul_const(nabla_w[i], LearRate / (float)mini_batchin.rows);
+//             mat_mul_const(nabla_b[i], LearRate / (float)mini_batchin.rows);
+//             mat_mul_const(nn.layers[i + 1].w, (1 - LearRate * (RegParam / n)));
+//             mat_subEW(nn.layers[i + 1].w, nn.layers[i + 1].w, nabla_w[i]);
+//             mat_subEW(nn.layers[i + 1].b, nn.layers[i + 1].b, nabla_b[i]);
+//         }
+//         reset_nablas(nn);
+//     }
 
 
-    void learn(Arena* arena, Nnet nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam) {
-
+    void learn(Arena* arena, Nnet nn, Mat traininput, Mat trainoutput, size_t epochs, size_t mini_batch_size, float LearRate, float RegParam)
+    {
         size_t n = traininput.rows;
         size_t batches = n / mini_batch_size;
         nabla_b = mats_alloc(arena, nn, (MatType)biases);
         nabla_w = mats_alloc(arena, nn, (MatType)weights);
-        for (size_t i = 0; i < epochs; i++) {
-            for (size_t j = 0; j < batches; j++) {
+        Vb = mats_alloc(arena, nn, (MatType)biases);
+        Vw = mats_alloc(arena, nn, (MatType)weights);
+        for (size_t i = 0; i < epochs; i++)
+        {
+            for (size_t j = 0; j < batches; j++)
+            {
                 Mat mini_batchin = mat_mat(traininput, j, j + (mini_batch_size - 1), 0, traininput.cols - 1);
                 Mat mini_batchout = mat_mat(trainoutput, j, j + (mini_batch_size - 1), 0, trainoutput.cols - 1);
                 update_mini_batch(arena, nn, mini_batchin, mini_batchout, LearRate, RegParam, n);
             }
-            // printf("cost : %f\n", nn_cost(nn, traininput, trainoutput));
+            if (i % 10 == 0)
+            {
+                float cost = nn_cost(nn, traininput, trainoutput);
+                printf("    cost: %f\n", cost);
+            }
+            printf("epoch %zu\n", i + 1);
         }
     }
 
